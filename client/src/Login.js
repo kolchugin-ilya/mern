@@ -1,10 +1,10 @@
 import React, {useEffect} from 'react';
 import {useDispatch, useSelector} from "react-redux";
-import {setLogin, setSession} from "./store/actions/login-actions";
+import {setLoading, setLogin, setSession} from "./store/actions/login-actions";
 import axios from "axios";
 
 const Login = () => {
-    const {userInfo, name, password} = useSelector(state => state.loginReducer)
+    const {userInfo, loading, name, password} = useSelector(state => state.loginReducer)
     const dispatch = useDispatch()
 
     function handleSubmit(event) {

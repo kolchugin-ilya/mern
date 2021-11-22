@@ -7,6 +7,15 @@ export function setSession(userInfo) {
         }
     }
 }
+export function setLoading(loading) {
+    return (dispatch) => {
+        try {
+            dispatch({type: "loading", loading: loading})
+        } catch (e) {
+            console.log(e)
+        }
+    }
+}
 
 export function setLogin(name="", password="") {
     return (dispatch) => {

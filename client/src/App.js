@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {Redirect, Route, Switch} from "react-router-dom";
 import axios from "axios";
 import {useDispatch, useSelector} from "react-redux";
-import {setSession} from "./store/actions/login-actions";
+import {setLoading, setSession} from "./store/actions/login-actions";
 import Login from "./Login";
 
 const Logout = () => {
@@ -20,26 +20,27 @@ const Logout = () => {
 }
 
 const App = () => {
-    const {userInfo} = useSelector(state => state.loginReducer)
+    const {userInfo, loading} = useSelector(state => state.loginReducer)
     const dispatch = useDispatch()
 
     const checkLoginStatus = () => {
+        dispatch(setLoading(true));
         axios.post("http://localhost:3001/isLogin", {}, {withCredentials: true})
             .then(response => {
+                dispatch(setLoading(false));
                     if (response.data.user)
                         dispatch(setSession(response.data.user))
                 }
             )
             .catch(error => {
                 console.log("check login error", error);
+                dispatch(setLoading(false));
             });
     }
+
     useEffect(() => {
         checkLoginStatus();
-        }, [])
-
-    console.log(userInfo)
-
+    }, [])
     const HomePage = ({userinfo}) => {
         return <div>
             {/*{*/}
@@ -63,27 +64,39 @@ const App = () => {
     //         }
     //     </Route>
     // }
-
     return (
         <div>
-            <Switch>
-                <Route exact path="/">
-                    <HomePage userinfo={userInfo} />
-                </Route>
-                <Route exact path="/login">
-                    <Login/>
-                </Route>
-                <Route exact path="/registration">
-                    registration
-                </Route>
-                <Route exact path="/logout">
-                    <Logout/>
-                </Route>
-                <Route exact>
-                    <NotFoundPage/>
-                </Route>
-            </Switch>
+            {loading ? (
+                <div>...Data Loading.....</div>
+            ) : (
+                <div>
+                    <Switch>
+                        <Route exact path="/">
+                            {
+                                (userInfo === "")
+                                ?
+                                    <HomePage userinfo={userInfo}/>
+:
+                                    <Redirect to="/login"/>
+                            }
+                        </Route>
+                        <Route exact path="/login">
+                            <Login/>
+                        </Route>
+                        <Route exact path="/registration">
+                            registration
+                        </Route>
+                        <Route exact path="/logout">
+                            <Logout/>
+                        </Route>
+                        <Route exact>
+                            <NotFoundPage/>
+                        </Route>
+                    </Switch>
+                </div>
+            )}
         </div>
+
     );
 };
 
