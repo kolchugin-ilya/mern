@@ -1,1 +1,1 @@
-# mern
+# MySQL, ExpressJs, React, NodeJs
