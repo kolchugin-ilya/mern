@@ -38,13 +38,14 @@ class authController {
             })
         } catch (e) {
             console.log(e)
-            res.send(400).json({message: "Ошибка в модуле registration"})
+            res.status(400).json({message: "Ошибка в модуле registration"})
         }
     }
+
     async login(req, res) {
         try {
-            const name = req.body.name.trim();
-            const password = req.body.password.trim();
+            const name = req.body.name;
+            const password = req.body.password;
             if (!name && !password) {
                 res.status(400).json({message: "Введены некорректные данные"})
                 return;
@@ -55,15 +56,22 @@ class authController {
                 }
                 const search_query = mysql.format(`select password from users where name='${name}'`)
                 await connection.query(search_query, async (err, result) => {
+                    connection.release()
                     if (err) {
                         res.status(400).json({message: "Ошибка в search_query"})
+                    } else {
+                        if (result.length === 0) {
+                            res.status(400).json({message: "Такого пользователя не существует!"})
+                        } else {
+                            const validPassword = bcrypt.compareSync(password.toString(), result[0].password);
+                            if (!validPassword) {
+                                res.status(400).json({message: "Неверный пароль"})
+                            } else {
+                                req.session.userinfo = name
+                                res.json({message: "Успешная авторизация", session: req.session})
+                            }
+                        }
                     }
-                    const validPassword = bcrypt.compareSync(password, result[0].password);
-                    if (!validPassword) {
-                        res.status(400).json({message: "Неверный пароль"})
-                    }
-                    req.session.userinfo = name
-                    res.json({message: "Успешная авторизация", session: req.session})
                 })
             })
         } catch (e) {
@@ -71,6 +79,7 @@ class authController {
             res.send(400).json({message: "Ошибка авторизации"})
         }
     }
+
     async logout(req, res) {
         try {
             req.session.destroy(function (err) {
