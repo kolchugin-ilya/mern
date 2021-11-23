@@ -1,103 +1,78 @@
-import React, {useEffect, useRef, useState} from "react";
-import {Redirect, Route, Switch} from "react-router-dom";
+import React, { useEffect} from "react";
 import axios from "axios";
-import {useDispatch, useSelector} from "react-redux";
-import {setLoading, setSession} from "./store/actions/login-actions";
+import {Redirect, Route, Switch} from "react-router-dom";
 import Login from "./Login";
 
-const Logout = () => {
-    axios.post("http://localhost:3001/logout", {}, {withCredentials: true})
-        .then(response => {
-                console.log(response)
-            }
-        )
-        .catch(error => {
-            console.log("check login error", error);
-        });
-    return <div>
-        Logout
-    </div>
-}
-
 const App = () => {
-    const {userInfo, loading} = useSelector(state => state.loginReducer)
-    const dispatch = useDispatch()
 
-    const checkLoginStatus = () => {
-        dispatch(setLoading(true));
-        axios.post("http://localhost:3001/isLogin", {}, {withCredentials: true})
+    const Logout = () => {
+        axios.post("http://localhost:3001/logout", {}, {withCredentials: true})
             .then(response => {
-                dispatch(setLoading(false));
-                    if (response.data.user)
-                        dispatch(setSession(response.data.user))
-                }
-            )
+                localStorage.clear()
+                    window.location = "/"
+            })
             .catch(error => {
                 console.log("check login error", error);
-                dispatch(setLoading(false));
             });
+        return null;
     }
-
     useEffect(() => {
-        checkLoginStatus();
-    }, [])
-    const HomePage = ({userinfo}) => {
-        return <div>
-            {/*{*/}
-            {/*    (userinfo === "") &&*/}
-            {/*    <Redirect to="/login"/>*/}
-            {/*}*/}
-            homePage {userinfo}
-        </div>
-    }
-    const NotFoundPage = () => {
-        return <div>404</div>
-    }
-    // const PrivateRoute = ({component: Component, ...props}) => {
-    //     return <Route exact {...props}>
-    //         {
-    //             (userInfo === "")
-    //                 ?
-    //                 <Redirect to="/login"/>
-    //                 :
-    //                 <Component props={props}/>
-    //         }
-    //     </Route>
-    // }
-    return (
-        <div>
-            {loading ? (
-                <div>...Data Loading.....</div>
-            ) : (
-                <div>
-                    <Switch>
-                        <Route exact path="/">
-                            {
-                                (userInfo === "")
-                                ?
-                                    <HomePage userinfo={userInfo}/>
-:
-                                    <Redirect to="/login"/>
-                            }
-                        </Route>
-                        <Route exact path="/login">
-                            <Login/>
-                        </Route>
-                        <Route exact path="/registration">
-                            registration
-                        </Route>
-                        <Route exact path="/logout">
-                            <Logout/>
-                        </Route>
-                        <Route exact>
-                            <NotFoundPage/>
-                        </Route>
-                    </Switch>
-                </div>
-            )}
-        </div>
+        axios.post("http://localhost:3001/isLogin", {}, {withCredentials: true})
+            .then(response => {
+                if (response.data.user)
+                    console.log("Чел есть")
+                else {
+                    localStorage.clear();
+                }
+            })
+            .catch(error => {
+                console.log("check login error", error);
+            });
+        console.log(localStorage)
+    });
 
-    );
+        return (
+            <div>
+                <Switch>
+                    <Route exact path="/">
+                        {
+                            (localStorage.getItem('userinfo'))
+                            ?
+                            <div>
+                                HOMEPAGE
+                                WELCOME CHEL
+                            </div>
+                            :
+                            <Redirect to="/login"/>
+                        }
+                    </Route>
+                    <Route exact path="/registration">
+                        registration
+                    </Route>
+                    <Route exact path="/logout">
+                        {
+                            (localStorage.getItem('userinfo'))
+                                ?
+                                <Logout/>
+                                :
+                                <Redirect to="/login"/>
+                        }
+                    </Route>
+                    <Route exact path="/login">
+                        <Login/>
+                    </Route>
+                    <Route exact>
+                        {
+                            (localStorage.getItem('userinfo'))
+                                ?
+                                <div>404</div>
+                                :
+                                <Redirect to="/login"/>
+                        }
+                    </Route>
+                </Switch>
+            </div>
+        );
 };
 
 export default App;
