@@ -1,4 +1,4 @@
-const getConnection = require('./connection/connection');
+const getConnection = require('../connection/connection');
 const mysql = require("mysql");
 const bcrypt = require('bcrypt');
 
@@ -20,6 +20,7 @@ class authController {
                 const hashPassword = bcrypt.hashSync(password, 7);
                 const insert_query = mysql.format(`insert into users(name,password,role,active) values ('${name}', '${hashPassword}', '${role}', '1')`)
                 await connection.query(search_query, async (err, result) => {
+                    connection.release()
                     if (err) {
                         res.status(400).json({message: "Ошибка в search_query"})
                     }
@@ -92,6 +93,20 @@ class authController {
         } catch (e) {
             console.log(e)
             res.send(400).json({message: "Ошибка logout"})
+        }
+    }
+
+    async isLogin(req, res) {
+        try {
+            if(req.session.userinfo){
+                res.json({user: req.session.userinfo})
+            }
+            else{
+                res.json({user: "", error: "Не авторизован"})
+            }
+        } catch (e) {
+            console.log(e)
+            res.send(400).json({message: "Ошибка isLogin"})
         }
     }
 }

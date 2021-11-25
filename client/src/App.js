@@ -1,27 +1,20 @@
 import React, { useEffect} from "react";
 import axios from "axios";
 import {Redirect, Route, Switch} from "react-router-dom";
-import Login from "./Login";
+import Login from "./components/layout/Login";
 import {useDispatch, useSelector} from "react-redux";
 import {setLoading, setSession} from "./store/actions/login-actions";
-import Registration from "./Registration";
+import Registration from "./components/layout/Registration";
+import HomePage from "./components/layout/HomePage";
+import PageNotFound from "./components/layout/PageNotFound";
+import Logout from "./components/layout/Logout";
+import Loading from "./components/layout/Loading";
 
 const App = () => {
     const { loading, userInfo } = useSelector(state => state.loginReducer)
     const dispatch = useDispatch()
 
-    const Logout = () => {
-        axios.post("http://localhost:3001/logout", {}, {withCredentials: true})
-            .then(response => {
-                localStorage.clear()
-                    window.location = "/"
-            })
-            .catch(error => {
-                console.log("check login error", error);
-            });
-        return null;
-    }
-    useEffect(() => {
+    const isLogin = () => {
         axios.post("http://localhost:3001/isLogin", {}, {withCredentials: true})
             .then(response => {
                 if (response.data.user) {
@@ -29,59 +22,50 @@ const App = () => {
                 }
                 else {
                     localStorage.clear();
+                    dispatch(setSession({name: "", role: ""}))
                 }
                 dispatch(setLoading(false))
             })
             .catch(error => {
                 localStorage.clear();
+                dispatch(setSession({name: "", role: ""}))
                 dispatch(setLoading(false))
                 console.log("check login error", error);
             });
+    }
+
+    useEffect(() => {
+        isLogin();
     }, []);
+
+        const PrivateRoute = ({component: Component, props}) => {
+            return  <Route {...props}>
+                {
+                    (userInfo.name)
+                        ?
+                        <Component userInfo={userInfo}/>
+                        :
+                        <Redirect to="/login"/>
+                }
+            </Route>
+        }
 
         return (
                 (loading)
                 ?
-                    <div> Идёт загрузка</div>
+                    <Loading/>
                 :
                 <div>
                     <Switch>
-                        <Route exact path="/">
-                            {
-                                (localStorage.getItem('userinfo'))
-                                    ?
-                                    <div>
-                                        <p>WELCOME  {userInfo.name} </p>
-                                        <p>role {userInfo.role} </p>
-                                    </div>
-                                    :
-                                    <Redirect to="/login"/>
-                            }
-                        </Route>
                         <Route exact path="/registration">
                             <Registration/>
-                        </Route>
-                        <Route exact path="/logout">
-                            {
-                                (localStorage.getItem('userinfo'))
-                                    ?
-                                    <Logout/>
-                                    :
-                                    <Redirect to="/login"/>
-                            }
                         </Route>
                         <Route exact path="/login">
                             <Login/>
                         </Route>
-                        <Route exact>
-                            {
-                                (localStorage.getItem('userinfo'))
-                                    ?
-                                    <div>404</div>
-                                    :
-                                    <Redirect to="/login"/>
-                            }
-                        </Route>
+                        <PrivateRoute exact component={HomePage} path="/"/>
+                        <PrivateRoute exact component={Logout} path="/logout"/>
+                        <PrivateRoute component={PageNotFound}/>
                     </Switch>
                 </div>
         );

@@ -21,49 +21,10 @@ app.all('/*', (req, res, next) => {
 app.use(require('./connection/session'));
 
 // модуль
-app.use(require('./authRouter'));
+app.use(require('./auth/authRouter'));
 
-// app.get('/sessionCheck',function(req,res) {
-//     res.send(req.session)
-// })
-// app.get('/login',function(req,res){
-//     // const { username , password} = req.body
-//     // console.log(req.body)
-//     // if(username !== userData.username || password !== userData.password){
-//     //     return res.status(401).json({
-//     //         error: true,
-//     //         message: "Username or Password is invalid"
-//     //     })
-//     // }
-//     // else{
-//     //     req.session.userinfo = userData.fullname
-//     //     res.send(req.session.userinfo)
-//     // }
-//     req.session.userinfo = "logged_in"
-//         res.send(req.session)
-//     console.log("login")
-// })
-//
-// app.get('/logout', function(req,res){
-//     req.session.destroy(function(err){
-//         if(!err){
-//             res.send("Log Out!")
-//         }
-//     })
-// })
-//
-//
-app.post('/isLogin', function(req,res){
-    if(req.session.userinfo){
-        res.json({user: req.session.userinfo})
-    }
-    else{
-        res.json({user: "", error: "Не авторизован"})
-    }
-})
-//
-// app.use(require('./users'));
-
+// модуль
+app.use(require('./data/dataRouter'));
 
 try {
     app.listen(port,()=> console.log(`Server Started on port ${port}...`))

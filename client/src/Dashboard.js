@@ -1,11 +1,10 @@
 import React from "react";
 
-const Dashboard = props => {
+const Dashboard = () => {
     return (
         <div>
             <div>
                 <h1>Dashboard</h1>
-                <h1>Status: {props.loggedInStatus}</h1>
             </div>
         </div>
     );

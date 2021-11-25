@@ -1,6 +1,6 @@
 import React from 'react';
 import {useDispatch, useSelector} from "react-redux";
-import {setError, setLogin} from "./store/actions/login-actions";
+import {setError, setLogin} from "../../store/actions/login-actions";
 import axios from "axios";
 
 const Registration = () => {
@@ -14,7 +14,7 @@ const Registration = () => {
             "password": password
         }, {withCredentials: true})
             .then(response => {
-                    console.log(response)
+                    window.location="/"
                 }
             )
             .catch(error => {
