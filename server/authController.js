@@ -7,6 +7,7 @@ class authController {
         try {
             const name = req.body.name.trim();
             const password = req.body.password.trim();
+            const role = (req.body.role) ? req.body.role : "user";
             if (!name && !password) {
                 res.status(400).json({message: "Введены некорректные данные"})
                 return;
@@ -17,7 +18,7 @@ class authController {
                 }
                 const search_query = mysql.format(`select * from users where name='${name}'`)
                 const hashPassword = bcrypt.hashSync(password, 7);
-                const insert_query = mysql.format(`insert into users(name, password) values ('${name}', '${hashPassword}')`)
+                const insert_query = mysql.format(`insert into users(name,password,role,active) values ('${name}', '${hashPassword}', '${role}', '1')`)
                 await connection.query(search_query, async (err, result) => {
                     if (err) {
                         res.status(400).json({message: "Ошибка в search_query"})
@@ -54,7 +55,7 @@ class authController {
                 if (err) {
                     res.status(400).json({message: "Ошибка при подключении в login"})
                 }
-                const search_query = mysql.format(`select password from users where name='${name}'`)
+                const search_query = mysql.format(`select password, role from users where name='${name}'`)
                 await connection.query(search_query, async (err, result) => {
                     connection.release()
                     if (err) {
@@ -67,7 +68,7 @@ class authController {
                             if (!validPassword) {
                                 res.status(400).json({message: "Неверный пароль"})
                             } else {
-                                req.session.userinfo = name
+                                req.session.userinfo = { name: name, role: result[0]['role']}
                                 res.json({message: "Успешная авторизация", session: req.session})
                             }
                         }
