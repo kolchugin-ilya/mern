@@ -2,29 +2,30 @@ const getConnection = require('../connection/connection');
 const mysql = require("mysql");
 
 class dataController {
-    async fetchData(req, res) {
+
+    async readData(req, res) {
         try {
-            const {id} = req.body;
+            const { table, columns } = req.body;
             getConnection(async (err, connection) => {
                 if (err) {
-                    res.status(400).json({message: "Ошибка при подключении в fetchData"})
+                    res.status(400).json({message: "Ошибка при подключении в readData"})
                 }
-                const search_query = (id)?mysql.format(`select * from data where id='${id}'`):mysql.format(`select * from data`)
+                const search_query = mysql.format(`SELECT ${columns} from ${table}`)
                 await connection.query(search_query, async (err, result) => {
                     connection.release()
                     if (err) {
-                        res.status(400).json({message: "Ошибка в fetchData"})
+                        res.status(400).json({message: "Ошибка в readData"})
                     }
                     res.json({result: result})
                 })
             })
         } catch (e) {
             console.log(e)
-            res.send(400).json({message: "Ошибка fetchData"})
+            res.send(400).json({message: "Ошибка чтения из базы данных"})
         }
     }
 
-    async insertData(req, res) {
+    async createData(req, res) {
         try {
             const {col1,col2,col3} = req.body;
             getConnection(async (err, connection) => {
@@ -40,7 +41,7 @@ class dataController {
                     await connection.query(search_query, async (err, result) => {
                         connection.release()
                         if (err) {
-                            res.status(400).json({message: "Ошибка в fetchData"})
+                            res.status(400).json({message: "Ошибка создания записи"})
                         }
                         res.json({result: result})
                     })
@@ -48,7 +49,7 @@ class dataController {
             })
         } catch (e) {
             console.log(e)
-            res.send(400).json({message: "Ошибка fetchData"})
+            res.send(400).json({message: "Ошибка insertData"})
         }
     }
 
@@ -62,7 +63,7 @@ class dataController {
                 const delete_query = mysql.format(`update data set (active='0') where id='${id}'`);
                 await connection.query(delete_query, async (err, result) => {
                     if (err) {
-                        res.status(400).json({message: "Ошибка в deleteData"})
+                        res.status(400).json({message: "Ошибка удаления"})
                     }
                     res.json({message: "Удалено."})
                 })
@@ -70,6 +71,14 @@ class dataController {
         } catch (e) {
             console.log(e)
             res.send(400).json({message: "Ошибка deleteData"})
+        }
+    }
+
+    async updateData(req, res) {
+        try {
+        } catch (e) {
+            console.log(e)
+            res.send(400).json({message: "Ошибка обновления"})
         }
     }
 }
