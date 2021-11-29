@@ -10,7 +10,7 @@ class dataController {
                 if (err) {
                     res.status(400).json({message: "Ошибка при подключении в readData"})
                 }
-                const search_query = mysql.format(`SELECT ${columns} from ${table}`)
+                const search_query = mysql.format(`select ${columns} from ${table}`)
                 await connection.query(search_query, async (err, result) => {
                     connection.release()
                     if (err) {
@@ -27,29 +27,22 @@ class dataController {
 
     async createData(req, res) {
         try {
-            const {col1,col2,col3} = req.body;
+            const { table, columns, values } = req.body;
             getConnection(async (err, connection) => {
                 if (err) {
-                    res.status(400).json({message: "Ошибка при подключении в insertData"})
+                    res.status(400).json({message: "Ошибка при подключении в createData"})
                 }
-                const search_query = mysql.format(`select * from data`)
-                const insert_query = mysql.format(`insert into data(datapos1, datapos2, datadate, active) values('${col1}','${col2}','${col3}',1)`);
+                const insert_query = mysql.format(`insert into ${table}(${columns}) values(${values})`);
                 await connection.query(insert_query, async (err, result) => {
                     if (err) {
-                        res.status(400).json({message: "Ошибка в insertData"})
+                        res.status(400).json({message: "Ошибка в createData", result: err})
                     }
-                    await connection.query(search_query, async (err, result) => {
-                        connection.release()
-                        if (err) {
-                            res.status(400).json({message: "Ошибка создания записи"})
-                        }
-                        res.json({result: result})
-                    })
+                    res.json({message: "Успешное добавление"})
                 })
             })
         } catch (e) {
             console.log(e)
-            res.send(400).json({message: "Ошибка insertData"})
+            res.send(400).json({message: "Ошибка createData"})
         }
     }
 
