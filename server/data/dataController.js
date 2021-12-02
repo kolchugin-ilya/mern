@@ -49,16 +49,16 @@ class dataController {
 
     async deleteData(req, res) {
         try {
-            const {id} = req.body;
+            const {id, table} = req.body;
             getConnection(async (err, connection) => {
                 if (err) {
                     res.status(400).json({message: "Ошибка при подключении в insertData"})
                 }
-                const delete_query = mysql.format(`update data set (active='0') where id='${id}'`);
+                const delete_query = mysql.format(`update ${table} set ACTIVE_SIGN=0 where ID='${id}'`);
                 await connection.query(delete_query, async (err, result) => {
                     connection.release()
                     if (err) {
-                        res.status(400).json({message: "Ошибка удаления"})
+                        res.status(400).json({message: "Ошибка удаления", err: err})
                     }
                     res.json({message: "Удалено."})
                 })
