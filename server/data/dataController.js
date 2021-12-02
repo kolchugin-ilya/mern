@@ -5,12 +5,12 @@ class dataController {
 
     async readData(req, res) {
         try {
-            const { table, columns } = req.body;
+            const {table, columns, condition} = req.body;
             getConnection(async (err, connection) => {
                 if (err) {
                     res.status(400).json({message: "Ошибка при подключении в readData"})
                 }
-                const search_query = mysql.format(`select ${columns} from ${table}`)
+                const search_query = mysql.format(`select ${columns} from ${table} WHERE ACTIVE_SIGN=1 ${condition}`)
                 await connection.query(search_query, async (err, result) => {
                     connection.release()
                     if (err) {
@@ -27,13 +27,14 @@ class dataController {
 
     async createData(req, res) {
         try {
-            const { table, columns, values } = req.body;
+            const {table, columns, values} = req.body;
             getConnection(async (err, connection) => {
                 if (err) {
                     res.status(400).json({message: "Ошибка при подключении в createData"})
                 }
                 const insert_query = mysql.format(`insert into ${table}(${columns}) values(${values})`);
                 await connection.query(insert_query, async (err, result) => {
+                    connection.release()
                     if (err) {
                         res.status(400).json({message: "Ошибка в createData", result: err})
                     }
@@ -55,6 +56,7 @@ class dataController {
                 }
                 const delete_query = mysql.format(`update data set (active='0') where id='${id}'`);
                 await connection.query(delete_query, async (err, result) => {
+                    connection.release()
                     if (err) {
                         res.status(400).json({message: "Ошибка удаления"})
                     }
@@ -69,6 +71,20 @@ class dataController {
 
     async updateData(req, res) {
         try {
+            const {id, table, columns} = req.body;
+            getConnection(async (err, connection) => {
+                if (err) {
+                    res.status(400).json({message: "Ошибка при подключении в updateData"})
+                }
+                const update_query = mysql.format(`update ${table} set ${columns} where ID=${id}`);
+                await connection.query(update_query, async (err, result) => {
+                    connection.release()
+                    if (err) {
+                        res.status(400).json({message: "Ошибка удаления", error: err})
+                    }
+                    res.json({message: "Обновлено."})
+                })
+            })
         } catch (e) {
             console.log(e)
             res.send(400).json({message: "Ошибка обновления"})
